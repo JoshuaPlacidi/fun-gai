@@ -8,5 +8,5 @@ def decode(model_weights_path, latents):
 
     return
 
-def generate_and_store_latents(model_weights_path, image_paths: list[str], save_path: str)
+def generate_and_store_latents(model_weights_path, image_paths: list[str], save_path: str):
     # TODO takes a list of image paths, passes them through the encoder, compresses the latents to 2D and stores at save_path
