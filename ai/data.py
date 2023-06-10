@@ -23,7 +23,7 @@ class AutoEncoderDataset(Dataset):
             alb.HorizontalFlip(p=0.5),
             alb.Rotate(limit=30, p=0.5),
             alb.Blur(p=0.2),
-            alb.RandomGamma(p=0.1),
+            #alb.RandomGamma(p=0.1),
             #alb.RandomShadow(p=0.5)
         ])
 
