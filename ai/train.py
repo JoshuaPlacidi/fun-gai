@@ -6,6 +6,8 @@ import argparse
 import torch
 import torchvision.transforms as T
 from tqdm import tqdm
+import os
+import json
 
 def train(
     model,
@@ -15,12 +17,19 @@ def train(
     lr,
     optimizer,
     ):
-    # TODO train model here and save its best weights
+
+    # create a folder to store model outputs
+    try:
+        new_folder_number = max([int(x) for x in os.listdir('results')]) + 1
+    except:
+        new_folder_number = 0
+    new_folder_path = f'results/{new_folder_number}'
+    os.mkdir(new_folder_path)
 
     data_logger = {
         'epoch': [],
-        'loss': [],
-
+        'train_loss': [],
+        'test_loss': [],
     }
 
     eval_steps = len(train_dataloader) // 4
@@ -30,17 +39,20 @@ def train(
     for epoch in tqdm(range(1, num_epochs+1), desc='Epoch', position=0):
         
         for iter, batch in enumerate(tqdm(train_dataloader, desc='Batch', position=1, leave=False)):
-            # forward pass
-            batch = batch.float()
-            # TODO put the batch onto the same device as the model
-            batch.to(model.device)
-            pred, mu, log_var = model(batch)
+            model.train()
 
-            # calculate loss
-            # TODO add the KL divergence
-            kl_loss = -0.5 * (1 + log_var - mu.pow(2) - log_var.exp()).mean()
-            mse_loss = F.mse_loss(pred, batch)
-            loss = kl_loss + mse_loss
+            with torch.cuda.amp.autocast():
+                # forward pass
+                batch = batch.float()
+                # TODO put the batch onto the same device as the model
+                batch.to(model.device)
+                pred, mu, log_var = model(batch)
+
+                # calculate loss
+                # TODO add the KL divergence
+                kl_loss = -0.5 * (1 + log_var - mu.pow(2) - log_var.exp()).mean()
+                mse_loss = F.mse_loss(pred, batch)
+                loss = kl_loss + mse_loss
 
             # back pass
             optimizer.zero_grad()
@@ -50,27 +62,27 @@ def train(
             scaler.step(optimizer)
             scaler.update()
 
-            if iter % eval_steps == 0 and iter > 0:
+            if iter % eval_steps == 0:
                 
-                test_loss = test(model, test_dataloader, epoch, iter)
-
+                test_loss = test(model, test_dataloader, epoch, iter, new_folder_path)
 
             data_logger['epoch'].append(epoch)
             data_logger['train_loss'].append(loss)
             data_logger['test_loss'].append(test_loss)
 
-    # with open('data.json', 'w') as fp:
-    #     json.dump(data, fp)
+            with open(f'results/{new_folder_path}/log.json', 'w') as fp:
+                json.dump(data_logger, fp)
 
-def test(model, test_dataloader, epoch, iter):
+def test(model, test_dataloader, epoch, iter, new_folder_path):
     to_pil = T.ToPILImage()
     total_test_loss = 0
     with torch.no_grad():
-        with torch.cuda.amp.autocat():
+        with torch.cuda.amp.autocast():
 
             for batch in tqdm(test_dataloader, desc='Test', position=2, leave=False):
-
+                model.eval()
                 # forward pass calculate loss
+                batch = batch.float()
                 pred, mu, log_var = model(batch.to(model.device))
                 test_loss = F.mse_loss(pred, batch)
                 total_test_loss += test_loss.item()
@@ -80,16 +92,10 @@ def test(model, test_dataloader, epoch, iter):
 
             sample_in, sample_out = to_pil(sample_in), to_pil(sample_out)
 
-            sample_in.save("images/{0}_{1}_sample_in.png".format(epoch, iter))
-            sample_out.save("images/{0}_{1}_sample_out.png".format(epoch, iter))
+            sample_in.save(f"{new_folder_path}/{epoch}_{iter}_sample_in.png")
+            sample_out.save(f"{new_folder_path}/{epoch}_{iter}_sample_out.png")
 
     return total_test_loss / len(test_dataloader)
-
-
-                
-
-            
-
 
 
 if __name__ == '__main__':

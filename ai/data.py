@@ -16,7 +16,7 @@ class AutoEncoderDataset(Dataset):
         # define image transformations
         self.transforms = transforms.Compose([
                     transforms.PILToTensor(),
-                    transforms.Resize((224,224))
+                    transforms.Resize((64,64))
                 ])
         self.alb = alb.Compose([
             alb.RandomBrightnessContrast(p=0.5),
