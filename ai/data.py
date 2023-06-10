@@ -22,9 +22,6 @@ class AutoEncoderDataset(Dataset):
             alb.RandomBrightnessContrast(p=0.5),
             alb.HorizontalFlip(p=0.5),
             alb.Rotate(limit=30, p=0.5),
-            alb.Blur(p=0.2),
-            alb.RandomGamma(p=0.1),
-            #alb.RandomShadow(p=0.5)
         ])
 
     def __len__(self):
@@ -33,8 +30,8 @@ class AutoEncoderDataset(Dataset):
     def transform(self, image):
         # TODO add some image transformations here
         image = self.transforms(image) 
-        image = self.alb(image=image.numpy())['image']
-        image = torch.from_numpy(image)
+        # image = self.alb(image=image.numpy())['image']
+        # image = torch.from_numpy(image)
         return image
     
     def __getitem__(self, index):
@@ -84,7 +81,7 @@ def get_dataloaders(dataset_path: str, batch_size: int = 16, split_ratio: str = 
     train_dataset, test_dateset = AutoEncoderDataset(train_paths), AutoEncoderDataset(test_paths)
 
     train_dataloader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
-    test_dataloader = DataLoader(dataset=test_dateset, batch_size=batch_size, shuffle=False)
+    test_dataloader = DataLoader(dataset=test_dateset, batch_size=batch_size, shuffle=True)
 
     return train_dataloader, test_dataloader
 

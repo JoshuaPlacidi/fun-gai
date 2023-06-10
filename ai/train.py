@@ -8,6 +8,7 @@ import torchvision.transforms as T
 from tqdm import tqdm
 import os
 import json
+import PIL.ImageOps
 
 def train(
     model,
@@ -67,10 +68,10 @@ def train(
                 test_loss = test(model, test_dataloader, epoch, iter, new_folder_path)
 
             data_logger['epoch'].append(epoch)
-            data_logger['train_loss'].append(loss)
+            data_logger['train_loss'].append(loss.item())
             data_logger['test_loss'].append(test_loss)
 
-            with open(f'results/{new_folder_path}/log.json', 'w') as fp:
+            with open(f'{new_folder_path}/log.json', 'w') as fp:
                 json.dump(data_logger, fp)
 
 def test(model, test_dataloader, epoch, iter, new_folder_path):
@@ -91,6 +92,7 @@ def test(model, test_dataloader, epoch, iter, new_folder_path):
             sample_in, sample_out = batch[0], pred[0]
 
             sample_in, sample_out = to_pil(sample_in), to_pil(sample_out)
+            sample_in, sample_out = PIL.ImageOps.invert(sample_in), PIL.ImageOps.invert(sample_out)
 
             sample_in.save(f"{new_folder_path}/{epoch}_{iter}_sample_in.png")
             sample_out.save(f"{new_folder_path}/{epoch}_{iter}_sample_out.png")
