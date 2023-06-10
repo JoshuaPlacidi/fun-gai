@@ -6,6 +6,7 @@ import torch
 import torch.utils.data as data
 from torch.utils.data import Dataset, DataLoader
 from torchvision.transforms import transforms
+import albumentations as alb
 
 class AutoEncoderDataset(Dataset):
     def __init__(self, image_paths: list[str]):
@@ -15,25 +16,36 @@ class AutoEncoderDataset(Dataset):
         # define image transformations
         self.transforms = transforms.Compose([
                     transforms.PILToTensor(),
-                    transforms.Resize((128,128))
+                    transforms.Resize((224,224))
                 ])
+        self.alb = alb.Compose([
+            alb.RandomBrightnessContrast(p=0.5),
+            alb.HorizontalFlip(p=0.5),
+            alb.Rotate(limit=30, p=0.5),
+            alb.Blur(p=0.2),
+            alb.RandomGamma(p=0.1),
+            #alb.RandomShadow(p=0.5)
+        ])
 
     def __len__(self):
         return len(self.image_paths)
     
     def transform(self, image):
         # TODO add some image transformations here
-        return self.transforms(image)
+        image = self.transforms(image) 
+        image = self.alb(image=image.numpy())['image']
+        image = torch.from_numpy(image)
+        return image
     
     def __getitem__(self, index):
         # read the datapoint
         class_name, image_path = self.image_paths[index]
         
-        try:
-            image = Image.open(image_path).convert('RGB')
-            image = self.transform(image)
-        except:
-            raise Exception(f'Failed to read and process file: {image_path}')
+        #try:
+        image = Image.open(image_path).convert('RGB')
+        image = self.transform(image)
+        #except:
+            #raise Exception(f'Failed to read and process file: {image_path}')
 
         return image
     
@@ -92,7 +104,7 @@ if __name__ == '__main__':
     dataset = AutoEncoderDataset(image_paths=image_paths)
 
     # visualise an image
-    x = dataset.__getitem__(10)
+    x = dataset.__getitem__(233)
     image = transforms.ToPILImage()(x)
     image.show()
 
