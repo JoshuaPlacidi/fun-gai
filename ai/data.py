@@ -15,7 +15,7 @@ class AutoEncoderDataset(Dataset):
         # define image transformations
         self.transforms = transforms.Compose([
                     transforms.PILToTensor(),
-                    transforms.Resize((224,224))
+                    transforms.Resize((128,128))
                 ])
 
     def __len__(self):
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     dataset = AutoEncoderDataset(image_paths=image_paths)
 
     # visualise an image
-    x = dataset.__getitem__(220)
+    x = dataset.__getitem__(10)
     image = transforms.ToPILImage()(x)
     image.show()
 
