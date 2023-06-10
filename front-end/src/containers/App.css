@@ -1,0 +1,47 @@
+body {
+  margin-left: 10%;
+  margin-right: 10%;
+  background-color: #f9f9f9;
+}
+
+.App {
+  text-align: center;
+}
+
+.App-header {
+  background-color: #222;
+  height: 150px;
+  padding: 20px;
+  color: white;
+}
+
+.App-title {
+  font-size: 1.5em;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+.ImageDisplay {
+  display: inline-block;
+  /* float: left; */
+}
+.ChartDisplay {
+  display: inline-block;
+
+  /* float: right; */
+}
+
+.DisplayImage {
+  margin-bottom: 50px;
+}
+
+.SpeciesList {
+  margin-bottom: 50px;
+}
+
+@keyframes App-logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
