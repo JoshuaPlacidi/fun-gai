@@ -4,6 +4,8 @@ import torch.optim as optim
 import torch.nn.functional as F
 import argparse
 import torch
+import torchvision.transforms as T
+from tqdm import tqdm
 
 def train(
     model,
@@ -21,15 +23,17 @@ def train(
 
     }
 
+    eval_steps = len(train_dataloader) // 4
+
     scaler = torch.cuda.amp.GradScaler()
 
-    for epoch in range(1, num_epochs+1):
+    for epoch in tqdm(range(1, num_epochs+1), desc='Epoch', position=0):
         
-        for batch in train_dataloader:
+        for iter, batch in enumerate(tqdm(train_dataloader, desc='Batch', position=1, leave=False)):
             # forward pass
             batch = batch.float()
             # TODO put the batch onto the same device as the model
-            # batch.to(model)
+            batch.to(model.device)
             pred, mu, log_var = model(batch)
 
             # calculate loss
@@ -46,10 +50,47 @@ def train(
             scaler.step(optimizer)
             scaler.update()
 
-            data_logger['epoch'].append(epoch)
-            data_logger['loss'].append(loss)
+            if iter % eval_steps == 0 and iter > 0:
+                
+                test_loss = test(model, test_dataloader, epoch, iter)
 
-    return
+
+            data_logger['epoch'].append(epoch)
+            data_logger['train_loss'].append(loss)
+            data_logger['test_loss'].append(test_loss)
+
+    # with open('data.json', 'w') as fp:
+    #     json.dump(data, fp)
+
+def test(model, test_dataloader, epoch, iter):
+    to_pil = T.ToPILImage()
+    total_test_loss = 0
+    with torch.no_grad():
+        with torch.cuda.amp.autocat():
+
+            for batch in tqdm(test_dataloader, desc='Test', position=2, leave=False):
+
+                # forward pass calculate loss
+                pred, mu, log_var = model(batch.to(model.device))
+                test_loss = F.mse_loss(pred, batch)
+                total_test_loss += test_loss.item()
+
+            # save a sample from the test set
+            sample_in, sample_out = batch[0], pred[0]
+
+            sample_in, sample_out = to_pil(sample_in), to_pil(sample_out)
+
+            sample_in.save("images/{0}_{1}_sample_in.png".format(epoch, iter))
+            sample_out.save("images/{0}_{1}_sample_out.png".format(epoch, iter))
+
+    return total_test_loss / len(test_dataloader)
+
+
+                
+
+            
+
+
 
 if __name__ == '__main__':
 
@@ -66,9 +107,6 @@ if __name__ == '__main__':
     parser.add_argument('-w','--weights_path', type=str, required=False,
                         help='The path to pretrained weights')
     
-    parser.add_argument('-c','--cuda_device', type=str, default='cpu',
-                        help='The cuda device to run training with, e.g. "cuda:0", defaults to "cpu"')
-    
     parser.add_argument('-e','--num_epochs', type=int, default=20,
                         help='The number of epochs to run training for, defaults to 20')
     
@@ -83,9 +121,9 @@ if __name__ == '__main__':
 
     # get model
     model = VAE(channel_in=3, latent_channels=64)
-
-    if args.cuda_device is not None:
-        model.to(args.cuda_device)
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    model.to(device)
+    model.device = device
 
     if args.weights_path is not None:
         model_dict = model.state_dict()
