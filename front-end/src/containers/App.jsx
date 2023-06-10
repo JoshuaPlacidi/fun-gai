@@ -15,7 +15,7 @@ import "./App.css";
 
 import encodedData from "../encoded.json";
 
-const MODEL_PATH = "http://127.0.0.1:8080/models/generatorjs/model.json";
+const MODEL_PATH = "http://127.0.0.1:8080/front-end/public/models/generatorjs/model.json";
 
 class App extends Component {
   constructor(props) {
