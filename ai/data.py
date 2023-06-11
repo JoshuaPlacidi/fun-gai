@@ -15,21 +15,29 @@ class AutoEncoderDataset(Dataset):
 
         # define image transformations
         self.transforms = transforms.Compose([
-                    transforms.PILToTensor(),
-                    transforms.Resize((64,64))
+                    transforms.RandomHorizontalFlip(0.5),
+                    transforms.ToTensor(),
+                    transforms.Resize((64,64)),
+                    # transforms.ToTensor()
                 ])
-        self.alb = alb.Compose([
-            alb.RandomBrightnessContrast(p=0.5),
-            alb.HorizontalFlip(p=0.5),
-            alb.Rotate(limit=30, p=0.5),
-        ])
+        
+        self.norm = transforms.Normalize(0, 1)
+
+                
+        # self.alb = alb.Compose([
+        #     alb.RandomBrightnessContrast(p=0.5),
+        #     alb.HorizontalFlip(p=0.5),
+        #     alb.Rotate(limit=30, p=0.5),
+        # ])
 
     def __len__(self):
         return len(self.image_paths)
     
     def transform(self, image):
         # TODO add some image transformations here
-        image = self.transforms(image) 
+        image = self.transforms(image)
+        image = self.norm(image.float())
+
         # image = self.alb(image=image.numpy())['image']
         # image = torch.from_numpy(image)
         return image
@@ -37,7 +45,7 @@ class AutoEncoderDataset(Dataset):
     def __getitem__(self, index):
         # read the datapoint
         class_name, image_path = self.image_paths[index]
-        
+
         #try:
         image = Image.open(image_path).convert('RGB')
         image = self.transform(image)
@@ -108,5 +116,4 @@ if __name__ == '__main__':
     dataloader = DataLoader(dataset=dataset, batch_size=4, shuffle=True)
     
     for batch in dataloader:
-        print(batch.shape)
-        break
+        continue

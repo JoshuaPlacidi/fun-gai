@@ -15,7 +15,6 @@ def train(
     train_dataloader,
     test_dataloader,
     num_epochs,
-    lr,
     optimizer,
     ):
 
@@ -31,11 +30,23 @@ def train(
         'epoch': [],
         'train_loss': [],
         'test_loss': [],
+        'lr': [],
     }
+
+    to_pil = T.ToPILImage()
 
     eval_steps = len(train_dataloader) // 4
 
     scaler = torch.cuda.amp.GradScaler()
+
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer=optimizer,
+        mode='min',
+        factor=0.1,
+        patience=2,
+        threshold=0.005,
+        cooldown=1,
+    )
 
     for epoch in tqdm(range(1, num_epochs+1), desc='Epoch', position=0):
         
@@ -46,13 +57,11 @@ def train(
                 # forward pass
                 batch = batch.float()
                 # TODO put the batch onto the same device as the model
-                batch.to(model.device)
+                batch = batch.to(model.device)
                 pred, mu, log_var = model(batch)
 
-                # calculate loss
-                # TODO add the KL divergence
                 kl_loss = -0.5 * (1 + log_var - mu.pow(2) - log_var.exp()).mean()
-                mse_loss = F.mse_loss(pred, batch)
+                mse_loss = torch.nn.MSELoss()(batch, pred)
                 loss = kl_loss + mse_loss
 
             # back pass
@@ -67,12 +76,20 @@ def train(
                 
                 test_loss = test(model, test_dataloader, epoch, iter, new_folder_path)
 
+            # log data
             data_logger['epoch'].append(epoch)
             data_logger['train_loss'].append(loss.item())
             data_logger['test_loss'].append(test_loss)
+            data_logger['lr'].append(scheduler.optimizer.param_groups[0]['lr'])
 
+            # save data logs
             with open(f'{new_folder_path}/log.json', 'w') as fp:
                 json.dump(data_logger, fp)
+
+        scheduler.step(test_loss)
+
+        # save model weights every epoch
+        torch.save(model.state_dict(), f"{new_folder_path}/{epoch}_{iter}_model.pth")
 
 def test(model, test_dataloader, epoch, iter, new_folder_path):
     to_pil = T.ToPILImage()
@@ -84,7 +101,8 @@ def test(model, test_dataloader, epoch, iter, new_folder_path):
                 model.eval()
                 # forward pass calculate loss
                 batch = batch.float()
-                pred, mu, log_var = model(batch.to(model.device))
+                batch = batch.to(model.device)
+                pred, mu, log_var = model(batch)
                 test_loss = F.mse_loss(pred, batch)
                 total_test_loss += test_loss.item()
 
@@ -92,7 +110,7 @@ def test(model, test_dataloader, epoch, iter, new_folder_path):
             sample_in, sample_out = batch[0], pred[0]
 
             sample_in, sample_out = to_pil(sample_in), to_pil(sample_out)
-            sample_in, sample_out = PIL.ImageOps.invert(sample_in), PIL.ImageOps.invert(sample_out)
+            # sample_in, sample_out = PIL.ImageOps.invert(sample_in), PIL.ImageOps.invert(sample_out)
 
             sample_in.save(f"{new_folder_path}/{epoch}_{iter}_sample_in.png")
             sample_out.save(f"{new_folder_path}/{epoch}_{iter}_sample_out.png")
@@ -109,7 +127,7 @@ if __name__ == '__main__':
     parser.add_argument('-d','--dataset_path', type=str, required=True,
                         help='The path to the directory containing the images, should have structure "dataset_name/class/*.jpg"')
     
-    parser.add_argument('-b','--batch_size', type=str, default=64,
+    parser.add_argument('-b','--batch_size', type=int, default=64,
                         help='Batch size to use in the dataloaders')
     
     parser.add_argument('-w','--weights_path', type=str, required=False,
@@ -118,29 +136,32 @@ if __name__ == '__main__':
     parser.add_argument('-e','--num_epochs', type=int, default=20,
                         help='The number of epochs to run training for, defaults to 20')
     
-    parser.add_argument('-l','--learning_rate', type=float, default=0.001,
+    parser.add_argument('-l','--learning_rate', type=float, default=1e-4,
                         help='Initial learning rate')
+    
+    parser.add_argument('-s','--split_ratio', type=float, default=0.9,
+                        help='What fraction of data to use for training (rest is used for testing)')
 
     # extract arguments
     args = parser.parse_args()
 
     # get dataloaders
-    train_dataloader, test_dataloader = get_dataloaders(dataset_path=args.dataset_path, batch_size=args.batch_size)
+    train_dataloader, test_dataloader = get_dataloaders(dataset_path=args.dataset_path, batch_size=args.batch_size, split_ratio=args.split_ratio)
 
     # get model
-    model = VAE(channel_in=3, latent_channels=64)
+    model = VAE(channel_in=3, latent_channels=256)
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     model.to(device)
     model.device = device
 
     if args.weights_path is not None:
         model_dict = model.state_dict()
-        weights = torch.load(args.weights_path, map_location=torch.device(args.cuda_device))
-        model_dict.update(weights['state_dict'])
+        weights = torch.load(args.weights_path, map_location=device)
+        # model_dict.update(weights)
         # TODO fix model loading weights
-        # model.load_state_dict(model_dict)
+        model.load_state_dict(weights)
 
     optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
 
     train(model=model, train_dataloader=train_dataloader, test_dataloader=test_dataloader,
-          num_epochs=args.num_epochs, lr=args.learning_rate, optimizer=optimizer)
+          num_epochs=args.num_epochs, optimizer=optimizer)
