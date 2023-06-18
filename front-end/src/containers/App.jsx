@@ -8,6 +8,8 @@ import DisplayImage from "../components/DisplayImage";
 import SpeciesList from "../components/SpeciesList";
 import Explanation from "../components/Explanation";
 
+import axios from 'axios';
+
 
 import { rounder } from "../utils";
 
@@ -15,7 +17,7 @@ import "./App.css";
 
 import encodedData from "../encoded.json";
 
-const MODEL_PATH = "http://127.0.0.1:8080/models/generatorjs/model.json";
+const MODEL_PATH = "http://127.0.0.1:8080/front-end/public/models/generatorjs/model.json";
 
 class App extends Component {
   constructor(props) {
@@ -42,17 +44,34 @@ class App extends Component {
 
   async getImage() {
     const { model, mu, sigma } = this.state;
-    const zSample = tf.tensor([[mu, sigma]]);
-    return model
-      .predict(zSample)
-      .mul(tf.scalar(255.0))
-      .reshape([28, 28]);
+    const zSample = [mu, sigma];
+
+    const response = fetch('http://localhost:9999/decode', {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        zSample: zSample
+      }),
+    }).then(res => res.json()).then(res => {console.log(res);
+      tensor = torch.tensor(image_list)
+    print(tensor.shape)
+    });
+
+    
+
+
+
+    // return model
+    //   .predict(zSample)
+    //   .mul(tf.scalar(255.0))
+    //   .reshape([28, 28]);
   }
 
   render() {
-    return this.state.model === null ? (
-      <div>Loading, please wait</div>
-    ) : (
+    return (
       <div className="App">
         <h1>VAE Latent Space Explorer</h1>
         <div className="DisplayImage">
