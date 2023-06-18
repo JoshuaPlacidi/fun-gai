@@ -143,14 +143,20 @@ class VAE(nn.Module):
         self.encoder = Encoder(channel_in, ch=ch, latent_channels=latent_channels)
         self.decoder = Decoder(channel_in, ch=ch, latent_channels=latent_channels)
 
+        self.parameter_count = sum(p.numel() for p in self.parameters() if p.requires_grad)
+
     def forward(self, x):
         encoding, mu, log_var = self.encoder(x)
         recon_img = self.decoder(encoding)
         return recon_img, mu, log_var
+    
+    
 
 if __name__ == "__main__":
 
-    model = VAE(channel_in=3, latent_channels=64)
+    model = VAE(channel_in=3, ch=128, latent_channels=512)
+    print(model.parameter_count)
+
 
     input = torch.randn((5,3,128,128))
 

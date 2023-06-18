@@ -17,7 +17,7 @@ class AutoEncoderDataset(Dataset):
         self.transforms = transforms.Compose([
                     transforms.RandomHorizontalFlip(0.5),
                     transforms.ToTensor(),
-                    transforms.Resize((64,64)),
+                    transforms.Resize((224,224)),
                     # transforms.ToTensor()
                 ])
         

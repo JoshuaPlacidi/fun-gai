@@ -25,7 +25,7 @@ def encode(image_path: list[str], model_weights_path: str = None):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = VAE(channel_in=3, latent_channels=64)
     if model_weights_path is not None:
-        model.load_state_dict(torch.load(model_weights_path))
+        model.load_state_dict(torch.load(model_weights_path, map_location=device))
     model = model.to(device)
     # When in .eval() the Encoder will not sample from the distribution and will instead output mu as the encoding vector 
     # and log_var will be None
@@ -46,13 +46,20 @@ def decode(latents, model_weights_path: str = None):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = VAE(channel_in=3, latent_channels=64)
     if model_weights_path is not None:
-        model.load_state_dict(torch.load(model_weights_path))
-    model = model.to(device)
+        model.load_state_dict(torch.load(model_weights_path, map_location=device))
+    # model = model.to(device)
     model.eval()
 
     latents = latents.to(device)
+    print(latents.shape)
+    # Cast latents to double
+    latents = latents.float()
+    print(latents.dtype)
+
     with torch.no_grad():
         img_recon = model.decoder(latents)
+
+    # print(img_recon)
 
     # img_recon = img_recon.clamp(0, 1)
 
@@ -82,11 +89,11 @@ def generate_and_store_latents(image_paths: list[str], save_path: str, model_wei
 
 if __name__ == "__main__":
     # Encode
-    latents = encode("shrooms_1.jpeg")
+    latents = encode("shrooms_1.jpeg", model_weights_path="3_93_model.pth")
     print("Latents shape: ", latents.shape)
 
     # Decode
-    img_recon = decode(latents)
+    img_recon = decode(latents, model_weights_path="3_93_model.pth")
     print("Reconstructed image shape: ", img_recon.shape)
 
     # Get rid of batch dimension

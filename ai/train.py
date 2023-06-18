@@ -149,16 +149,13 @@ if __name__ == '__main__':
     train_dataloader, test_dataloader = get_dataloaders(dataset_path=args.dataset_path, batch_size=args.batch_size, split_ratio=args.split_ratio)
 
     # get model
-    model = VAE(channel_in=3, latent_channels=256)
+    model = VAE(channel_in=3, latent_channels=512, ch=64)
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     model.to(device)
     model.device = device
 
     if args.weights_path is not None:
-        model_dict = model.state_dict()
         weights = torch.load(args.weights_path, map_location=device)
-        # model_dict.update(weights)
-        # TODO fix model loading weights
         model.load_state_dict(weights)
 
     optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
