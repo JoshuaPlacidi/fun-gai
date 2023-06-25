@@ -2,4 +2,4 @@
 Fungi generative AI project
 
 
-![](ai/fungai.mp4)
+![](ai/fungai.gif)
