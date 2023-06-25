@@ -2,9 +2,9 @@
 
 TODO change to have 3 different gifs
 <p align="center">
-  <img width="250" height="250" src="ai/fungai.gif">
-  <img width="250" height="250" src="ai/fungai.gif">
-  <img width="250" height="250" src="ai/fungai.gif">
+  <img width="250" height="250" src="ai/gifs/fungai_1.gif">
+  <img width="250" height="250" src="ai/gifs/fungai_2.gif">
+  <img width="250" height="250" src="ai/gifs/fungai_3.gif">
 </p>
 
 Authors: [Joshua Placidi](https://www.linkedin.com/in/joshua-placidi/), [Sara Sabzikari](https://www.linkedin.com/in/sara-sabzikari/), [Vincenzo Incutti](https://www.linkedin.com/in/vincenzo-incutti/), [Ka Yeon Kim](https://www.linkedin.com/in/ka-yeon-kim-298935216/)
