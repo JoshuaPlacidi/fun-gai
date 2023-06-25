@@ -26,6 +26,7 @@ def train(
     new_folder_path = f'results/{new_folder_number}'
     os.mkdir(new_folder_path)
 
+    # initialise the data logger
     data_logger = {
         'epoch': [],
         'train_loss': [],
@@ -35,10 +36,12 @@ def train(
 
     to_pil = T.ToPILImage()
 
+    # how often to run the model on the test set
     eval_steps = len(train_dataloader) // 4
 
     scaler = torch.cuda.amp.GradScaler()
 
+    # dymanic scheduler to reduce the learning rate
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer=optimizer,
         mode='min',
@@ -56,7 +59,6 @@ def train(
             with torch.cuda.amp.autocast():
                 # forward pass
                 batch = batch.float()
-                # TODO put the batch onto the same device as the model
                 batch = batch.to(model.device)
                 pred, mu, log_var = model(batch)
 
@@ -73,7 +75,6 @@ def train(
             scaler.update()
 
             if iter % eval_steps == 0:
-                
                 test_loss = test(model, test_dataloader, epoch, iter, new_folder_path)
 
             # log data

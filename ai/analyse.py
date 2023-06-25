@@ -33,6 +33,9 @@ def latents_to_image(model, latents):
     return image
     
 def latent_image_path(model, image_list, num_steps=100):
+
+    # add the first image to the end of the image list so that the gif will endlessly loop
+    image_list.append(image_list[0])
     images = []
     for index in tqdm(range(len(image_list) - 1)):
         A = image_to_latents(model, image_list[index])
@@ -49,31 +52,7 @@ def latent_image_path(model, image_list, num_steps=100):
             image = to_pil(output.squeeze())
             images.append(image)
 
-    imageio.mimsave('movie.gif', images)
-
-def latent_random_path(model, num_samples, num_steps=100):
-    
-    A = torch.randn(1,512,1,1)
-    for _ in tqdm(range(num_samples)):
-        B = torch.randn(1,512,1,1)
-
-        step = (B - A) / num_steps
-
-        latents = A
-        images = []
-        for _ in range(num_steps):
-
-            latents += step
-            output = model.decoder(latents.to(model.device))
-            image = to_pil(output.squeeze())
-            images.append(image)
-
-        A = B
-
-    imageio.mimsave('movie.gif', images)
-
-
-
+    imageio.mimsave('fungai.gif', images)
 
 if __name__ == "__main__":
 
@@ -96,19 +75,6 @@ if __name__ == "__main__":
     weights = torch.load(args.weights_path, map_location=device)
     model.load_state_dict(weights)
 
-    image_list = [
-        'images/im1.jpg',
-        'images/im2.jpg',
-        'images/im3.jpg',
-        'images/im4.jpg',
-        'images/im5.jpg',
-        'images/im6.jpg',
-    ]
+    image_list = [f'images/{img}' for img in os.listdir('images')]
+
     latent_image_path(model, image_list, num_steps=70)
-
-    # latent_random_path(model, num_samples=10)
-
-    # latents = image_to_latents(model, 'images/im1.jpg')
-    # image = latents_to_image(model, latents)
-    # image.show()
-

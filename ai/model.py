@@ -155,13 +155,12 @@ class VAE(nn.Module):
 if __name__ == "__main__":
 
     model = VAE(channel_in=3, ch=128, latent_channels=512)
-    print(model.parameter_count)
 
 
-    input = torch.randn((5,3,128,128))
+    print(f'Parameter count: {model.parameter_count}')
 
-    print(input.shape)
+    rand_input = torch.randn((5,3,128,128))
+    print(f'Input shape: {rand_input.shape}')
 
-    recon_img, mu, log_var = model(input)
-
-    print(recon_img.shape, mu.shape, log_var.shape)
+    recon_img, mu, log_var = model(rand_input)
+    print(f'Output shape: {recon_img.shape}, {mu.shape}, {log_var.shape}')
