@@ -22,6 +22,17 @@ The culmination of our work can be seen in the gif at the top of the page.
 
 ### Biological
 
+In our project, we delved into the intriguing world of mushrooms, specifically focusing on the physiology of their fruiting bodies - mushrooms. 
+
+We recognized that mushrooms, as the visible fruiting body of fungi, offered a more accessible means of differentiating mushroom-producing species compared to solely examining mycelium/mycelial networks. Some distinctive physical characteristics are:
+* shape
+* color
+* gill type
+
+These are valuable markers for identifying and categorizing different species. However, relying solely on morphology for fungal classification may overlook substantial biological information inherent in these organisms. Therefore, acknowledging the limitations of morphology-based classification, we recognise incorporation of genomic, environmental and other data would provide a more accurate means of classifying mushrooms, and exploring viable hypothetical species in the latent space. 
+
+We demonstrate the feasibility and potential of using the latent space representation of physiological variables as a proof of concept. This approach opens up exciting possibilities for exploring unknown species and broadening our understanding of the diverse world of fungi.
+
 ### Technical
 
 VAEs learn in a self-supervised manner to predict their own input, given an input $X^{3,224,224}$ the model produces an output $\hat{X}^{3,224,224}$ with the objective of minimising the difference between $X$ and $\hat{X}$.
