@@ -42,7 +42,7 @@ def latent_image_path(model, image_list, num_steps=100, num_waits=20):
 
     videodims = (256,256)
     fourcc = cv2.VideoWriter_fourcc(*"mp4v") 
-    video = cv2.VideoWriter("fungai.mp4",fourcc, 60,videodims)
+    video = cv2.VideoWriter("fungai_image_path.mp4",fourcc, 60, videodims)
 
     for index in tqdm(range(len(image_list) - 1)):
         A = image_to_latents(model, image_list[index])
@@ -66,6 +66,41 @@ def latent_image_path(model, image_list, num_steps=100, num_waits=20):
             video.write(cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR))
 
     video.release()
+
+def latent_random_walk(model, num_samples=10, num_steps=100, num_waits=20):
+    torch.manual_seed(0)
+    model.eval()
+
+    videodims = (256,256)
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v") 
+    video = cv2.VideoWriter("fungai_random_walk.mp4",fourcc, 60, videodims)
+
+    A = torch.randn(1,512,13,13)
+    for _ in tqdm(range(num_samples)):
+
+        B = torch.randn(1,512,13,13)
+        A_image = to_pil(model.decoder(A.to(model.device)).squeeze())
+        
+        for _ in range(num_waits):
+            video.write(cv2.cvtColor(np.array(A_image), cv2.COLOR_RGB2BGR))
+
+        step = (B - A) / num_steps
+        latents = A
+
+        for _ in range(num_steps-1):
+
+            latents += step
+            output = model.decoder(latents.to(model.device))
+
+            image = to_pil(output.squeeze())
+
+            video.write(cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR))
+
+        A = B
+
+    video.release()
+
+    
 
 if __name__ == "__main__":
 
@@ -91,4 +126,5 @@ if __name__ == "__main__":
     image_list = [f'images/{img}' for img in os.listdir('images')]
     random.shuffle(image_list)
 
+    # latent_random_walk(model, num_samples=32)
     latent_image_path(model, image_list, num_steps=50)
