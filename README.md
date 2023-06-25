@@ -1,6 +1,5 @@
 # Fun-GAI: hallucinating mushrooms with generative AI
 
-TODO change to have 3 different gifs
 <p align="center">
   <img width="250" height="250" src="ai/gifs/fungai_1.gif">
   <img width="250" height="250" src="ai/gifs/fungai_2.gif">
