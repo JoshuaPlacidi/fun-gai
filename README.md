@@ -1,9 +1,9 @@
 # Fun-GAI: hallucinating mushrooms with generative AI
 
 <p align="center">
-  <img width="250" height="250" src="ai/gifs/fungai_1.gif">
-  <img width="250" height="250" src="ai/gifs/fungai_2.gif">
-  <img width="250" height="250" src="ai/gifs/fungai_3.gif">
+  <img width="256" height="256" src="ai/gifs/fungai_1.gif">
+  <img width="256" height="256" src="ai/gifs/fungai_2.gif">
+  <img width="256" height="256" src="ai/gifs/fungai_3.gif">
 </p>
 
 Authors: [Joshua Placidi](https://www.linkedin.com/in/joshua-placidi/), [Sara Sabzikari](https://www.linkedin.com/in/sara-sabzikari/), [Vincenzo Incutti](https://www.linkedin.com/in/vincenzo-incutti/), [Ka Yeon Kim](https://www.linkedin.com/in/ka-yeon-kim-298935216/)
@@ -40,7 +40,7 @@ The idea is that the VAE has to learn extract useful information to store in $z$
 We train the model to minimize the reconstruction loss which is measured as the [mean-squared error](https://en.wikipedia.org/wiki/Mean_squared_error) between $X$ and $\hat{X}$.
 Additionally VAEs add a KL-divergence term to the loss function, encouraging the model to learn normally distributed latents, thus giving a more coherent latent space and enabling generative sampling.
 
-To generate new samples using our learned model we simply pass a randomly initialised latent $z \sim \mathcal{N}(\mathbf{0}^{512},\mathbb{I}^{512 \times 512})$ to the decoder: $Y = decoder(z)$.
+To generate new samples, $Y$, using our learned model we simply pass a randomly initialised latent $z_i \sim \mathcal{N}(0,1)$ to the decoder: $Y = decoder(z)$.
 
 We used two datasets:
 - [Mushroom Common Genus](https://www.kaggle.com/datasets/maysee/mushrooms-classification-common-genuss-images): a dataset containing images from 7 mushroom genera
