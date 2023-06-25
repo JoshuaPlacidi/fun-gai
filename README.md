@@ -7,7 +7,7 @@ TODO change to have 3 different gifs
   <img width="250" height="250" src="ai/fungai.gif">
 </p>
 
-Authors: [Joshua Placidi](https://www.linkedin.com/in/joshua-placidi/), [Sara Sabzikari](https://www.linkedin.com/in/sara-sabzikari/), [Vincenzo Incutti](https://www.linkedin.com/in/vincenzo-incutti/), [Ka Yeib Kim](https://www.linkedin.com/in/ka-yeon-kim-298935216/)
+Authors: [Joshua Placidi](https://www.linkedin.com/in/joshua-placidi/), [Sara Sabzikari](https://www.linkedin.com/in/sara-sabzikari/), [Vincenzo Incutti](https://www.linkedin.com/in/vincenzo-incutti/), [Ka Yeon Kim](https://www.linkedin.com/in/ka-yeon-kim-298935216/)
 
 ### Introduction
 This is a project originally built in 12 hours for a [Biology + Generative Artifical Intelligence Hackathon](https://biohacklondon.notion.site/BioHack-London-40bea186f1a24e779b276087f2ee7e61).
