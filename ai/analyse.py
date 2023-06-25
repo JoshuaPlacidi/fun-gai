@@ -7,6 +7,8 @@ import torchvision.transforms as transforms
 from PIL import Image
 from tqdm import tqdm
 import random
+import cv2
+import numpy as np
 
 
 to_tensor = transforms.Compose([
@@ -33,22 +35,25 @@ def latents_to_image(model, latents):
 
     return image
     
-def latent_image_path(model, image_list, num_steps=100, num_waits=10):
+def latent_image_path(model, image_list, num_steps=100, num_waits=20):
     model.eval()
     # add the first image to the end of the image list so that the gif will endlessly loop
     image_list.append(image_list[0])
-    images = []
+
+    videodims = (256,256)
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v") 
+    video = cv2.VideoWriter("fungai.mp4",fourcc, 60,videodims)
+
     for index in tqdm(range(len(image_list) - 1)):
         A = image_to_latents(model, image_list[index])
         B = image_to_latents(model, image_list[index+1])
 
-        A_img = to_pil(model.decoder(A.to(model.device)).squeeze())
+        A_image = to_pil(model.decoder(A.to(model.device)).squeeze())
         
         for _ in range(num_waits):
-            images.append(A_img)
+            video.write(cv2.cvtColor(np.array(A_image), cv2.COLOR_RGB2BGR))
 
         step = (B - A) / num_steps
-
         latents = A
 
         for s in range(num_steps-1):
@@ -57,9 +62,10 @@ def latent_image_path(model, image_list, num_steps=100, num_waits=10):
             output = model.decoder(latents.to(model.device))
 
             image = to_pil(output.squeeze())
-            images.append(image)
 
-    imageio.mimsave('fungai.gif', images, format='GIF')
+            video.write(cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR))
+
+    video.release()
 
 if __name__ == "__main__":
 
@@ -85,4 +91,4 @@ if __name__ == "__main__":
     image_list = [f'images/{img}' for img in os.listdir('images')]
     random.shuffle(image_list)
 
-    latent_image_path(model, image_list, num_steps=30)
+    latent_image_path(model, image_list, num_steps=50)
