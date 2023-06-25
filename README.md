@@ -18,7 +18,7 @@ It has been estimated that more than 90% of all fungal species have yet to be de
 We built and trained a VAE from scratch to synthesis what new, yet undiscovered, mushrooms *could* look like.
 This project was built as a fun exploration into how an auto-encoder model learns to represent images of mushrooms in 
 a latent space.
-The culmination of work can be seen in the gif at the top of the page.
+The culmination of our work can be seen in the gif at the top of the page.
 
 ### Biological
 
