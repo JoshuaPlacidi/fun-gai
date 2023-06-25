@@ -9,7 +9,6 @@ from tqdm import tqdm
 
 
 to_tensor = transforms.Compose([
-                    transforms.RandomHorizontalFlip(0.5),
                     transforms.ToTensor(),
                     transforms.Resize((244,244)),
                 ])
@@ -22,19 +21,19 @@ def image_to_latents(model, image_path):
     image = to_tensor(image)
     image = image.unsqueeze(0)
 
-    latents, _, _ = model.encoder(image)
+    latents, _, _ = model.encoder(image.to(model.device))
 
     return latents
 
 def latents_to_image(model, latents):
 
-    image = model.decoder(latents)
+    image = model.decoder(latents.to(model.device))
     image = to_pil(image[0])
 
     return image
     
 def latent_image_path(model, image_list, num_steps=100):
-    
+    images = []
     for index in tqdm(range(len(image_list) - 1)):
         A = image_to_latents(model, image_list[index])
         B = image_to_latents(model, image_list[index+1])
@@ -42,11 +41,10 @@ def latent_image_path(model, image_list, num_steps=100):
         step = (B - A) / num_steps
 
         latents = A
-        images = []
         for _ in range(num_steps):
 
             latents += step
-            output = model.decoder(latents)
+            output = model.decoder(latents.to(model.device))
 
             image = to_pil(output.squeeze())
             images.append(image)
@@ -55,9 +53,9 @@ def latent_image_path(model, image_list, num_steps=100):
 
 def latent_random_path(model, num_samples, num_steps=100):
     
-    A = torch.randn(1,256,1,1)
+    A = torch.randn(1,512,1,1)
     for _ in tqdm(range(num_samples)):
-        B = torch.randn(1,256,1,1)
+        B = torch.randn(1,512,1,1)
 
         step = (B - A) / num_steps
 
@@ -66,7 +64,7 @@ def latent_random_path(model, num_samples, num_steps=100):
         for _ in range(num_steps):
 
             latents += step
-            output = model.decoder(latents)
+            output = model.decoder(latents.to(model.device))
             image = to_pil(output.squeeze())
             images.append(image)
 
@@ -93,20 +91,22 @@ if __name__ == "__main__":
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     # define the model
-    model = VAE(channel_in=3, latent_channels=256).to(device)
+    model = VAE(channel_in=3, latent_channels=512, ch=80).to(device)
     model.device = device
     weights = torch.load(args.weights_path, map_location=device)
     model.load_state_dict(weights)
 
-    # image_list = [
-    #     'images/im1.jpg',
-    #     'images/im2.jpg',
-    #     'images/im3.jpg',
-    #     'images/im4.jpg'
-    # ]
-    # latent_image_path(model, image_list)
+    image_list = [
+        'images/im1.jpg',
+        'images/im2.jpg',
+        'images/im3.jpg',
+        'images/im4.jpg',
+        'images/im5.jpg',
+        'images/im6.jpg',
+    ]
+    latent_image_path(model, image_list, num_steps=70)
 
-    latent_random_path(model, num_samples=10)
+    # latent_random_path(model, num_samples=10)
 
     # latents = image_to_latents(model, 'images/im1.jpg')
     # image = latents_to_image(model, latents)

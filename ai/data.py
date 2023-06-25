@@ -6,7 +6,6 @@ import torch
 import torch.utils.data as data
 from torch.utils.data import Dataset, DataLoader
 from torchvision.transforms import transforms
-import albumentations as alb
 
 class AutoEncoderDataset(Dataset):
     def __init__(self, image_paths: list[str]):
@@ -88,8 +87,8 @@ def get_dataloaders(dataset_path: str, batch_size: int = 16, split_ratio: str = 
 
     train_dataset, test_dateset = AutoEncoderDataset(train_paths), AutoEncoderDataset(test_paths)
 
-    train_dataloader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
-    test_dataloader = DataLoader(dataset=test_dateset, batch_size=batch_size, shuffle=True)
+    train_dataloader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True, num_workers=2)
+    test_dataloader = DataLoader(dataset=test_dateset, batch_size=batch_size, shuffle=True, num_workers=2)
 
     return train_dataloader, test_dataloader
 
