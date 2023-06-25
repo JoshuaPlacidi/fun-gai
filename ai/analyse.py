@@ -6,6 +6,7 @@ from model import VAE
 import torchvision.transforms as transforms
 from PIL import Image
 from tqdm import tqdm
+import random
 
 
 to_tensor = transforms.Compose([
@@ -32,8 +33,8 @@ def latents_to_image(model, latents):
 
     return image
     
-def latent_image_path(model, image_list, num_steps=100):
-
+def latent_image_path(model, image_list, num_steps=100, num_waits=10):
+    model.eval()
     # add the first image to the end of the image list so that the gif will endlessly loop
     image_list.append(image_list[0])
     images = []
@@ -41,10 +42,16 @@ def latent_image_path(model, image_list, num_steps=100):
         A = image_to_latents(model, image_list[index])
         B = image_to_latents(model, image_list[index+1])
 
+        A_img = to_pil(model.decoder(A.to(model.device)).squeeze())
+        
+        for _ in range(num_waits):
+            images.append(A_img)
+
         step = (B - A) / num_steps
 
         latents = A
-        for _ in range(num_steps):
+
+        for s in range(num_steps-1):
 
             latents += step
             output = model.decoder(latents.to(model.device))
@@ -52,7 +59,7 @@ def latent_image_path(model, image_list, num_steps=100):
             image = to_pil(output.squeeze())
             images.append(image)
 
-    imageio.mimsave('fungai.gif', images)
+    imageio.mimsave('fungai.gif', images, format='GIF')
 
 if __name__ == "__main__":
 
@@ -76,5 +83,6 @@ if __name__ == "__main__":
     model.load_state_dict(weights)
 
     image_list = [f'images/{img}' for img in os.listdir('images')]
+    random.shuffle(image_list)
 
-    latent_image_path(model, image_list, num_steps=70)
+    latent_image_path(model, image_list, num_steps=30)
