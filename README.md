@@ -46,4 +46,8 @@ We used two datasets:
 - [Mushroom Common Genus](https://www.kaggle.com/datasets/maysee/mushrooms-classification-common-genuss-images): a dataset containing images from 7 mushroom genera
 - [Danish Fungi Dataset](https://sites.google.com/view/danish-fungi-dataset): a large dataset of over 100,000 images of danish mushrooms
 
-We ran a pretraining cycle using the Danish Fungi dataset, and then finetuned the model on the Mushroom Common Genus dataset.
+We ran a pretraining cycle using the Danish Fungi dataset, and then finetuned the model on the Mushroom Common Genus dataset. We used the following hyperparameters:
+- batch_size: 64
+- initial_learning_rate: $1 \times 10^{-4}$
+- num_epochs: 20
+- split_ratio: 0.9
