@@ -21,7 +21,7 @@ The culmination of our work can be seen in the gifs at the top of the page.
 
 ### Biological
 
-In our project, we delved into the intriguing world of mushrooms, specifically focusing on the physiology of their fruiting bodies - mushrooms. 
+In our project, we delved into the intriguing world of fungi, specifically focusing on the physiology of their fruiting bodies - mushrooms. 
 
 We recognized that mushrooms, as the visible fruiting body of fungi, offered a more accessible means of differentiating mushroom-producing species compared to solely examining mycelium/mycelial networks. Some distinctive physical characteristics are:
 * shape
